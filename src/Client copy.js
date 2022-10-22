@@ -51,9 +51,9 @@ class Client extends EventEmitter {
         super();
 
         this.options = Util.mergeDefault(DefaultOptions, options);
-
-        if (!this.options.authStrategy) {
-            if (Object.prototype.hasOwnProperty.call(this.options, 'session')) {
+        
+        if(!this.options.authStrategy) {
+            if(Object.prototype.hasOwnProperty.call(this.options, 'session')) {
                 process.emitWarning(
                     'options.session is deprecated and will be removed in a future release due to incompatibility with multi-device. ' +
                     'Use the LocalAuth authStrategy, don\'t pass in a session as an option, or suppress this warning by using the LegacySessionAuth strategy explicitly (see https://wwebjs.dev/guide/authentication.html#legacysessionauth-strategy).',
@@ -93,14 +93,14 @@ class Client extends EventEmitter {
             page = await browser.newPage();
         } else {
             const browserArgs = [...(puppeteerOpts.args || [])];
-            if (!browserArgs.find(arg => arg.includes('--user-agent'))) {
+            if(!browserArgs.find(arg => arg.includes('--user-agent'))) {
                 browserArgs.push(`--user-agent=${this.options.userAgent}`);
             }
 
-            browser = await puppeteer.launch({ ...puppeteerOpts, args: browserArgs });
+            browser = await puppeteer.launch({...puppeteerOpts, args: browserArgs});
             page = (await browser.pages())[0];
         }
-
+      
         await page.setUserAgent(this.options.userAgent);
         if (this.options.bypassCSP) await page.setBypassCSP(true);
 
@@ -184,7 +184,7 @@ class Client extends EventEmitter {
         // Scan-qrcode selector was found. Needs authentication
         if (needAuthentication) {
             const { failed, failureEventPayload, restart } = await this.authStrategy.onAuthenticationNeeded();
-            if (failed) {
+            if(failed) {
                 /**
                  * Emitted when there has been an error while trying to restore an existing session
                  * @event Client#auth_failure
@@ -228,11 +228,11 @@ class Client extends EventEmitter {
                         if (mut.type === 'attributes' && mut.attributeName === 'data-ref') {
                             window.qrChanged(mut.target.dataset.ref);
                         } else
-                            // Listens to retry button, when found, click it
-                            if (mut.type === 'childList') {
-                                const retry_button = document.querySelector(selectors.QR_RETRY_BUTTON);
-                                if (retry_button) retry_button.click();
-                            }
+                        // Listens to retry button, when found, click it
+                        if (mut.type === 'childList') {
+                            const retry_button = document.querySelector(selectors.QR_RETRY_BUTTON);
+                            if (retry_button) retry_button.click();
+                        }
                     });
                 });
                 obs.observe(qr_container.parentElement, {
@@ -249,10 +249,10 @@ class Client extends EventEmitter {
             // Wait for code scan
             try {
                 await page.waitForSelector(INTRO_IMG_SELECTOR, { timeout: 0 });
-            } catch (error) {
+            } catch(error) {
                 if (
-                    error.name === 'ProtocolError' &&
-                    error.message &&
+                    error.name === 'ProtocolError' && 
+                    error.message && 
                     error.message.match(/Target closed/)
                 ) {
                     // something has called .destroy() while waiting
@@ -317,13 +317,6 @@ class Client extends EventEmitter {
                      * @param {GroupNotification} notification GroupNotification with more information about the action
                      */
                     this.emit(Events.GROUP_LEAVE, notification);
-                } else if (msg.subtype === 'promote' || msg.subtype === 'demote') {
-                    /**
-                     * Emitted when a current user is promoted to an admin or demoted to a regular user.
-                     * @event Client#group_admin_me
-                     * @param {GroupNotification} notification GroupNotification with more information about the action
-                     */
-                    this.emit(Events.GROUP_ADMIN_ME, notification);
                 } else {
                     /**
                      * Emitted when group settings are updated, such as subject, description or picture.
@@ -523,17 +516,17 @@ class Client extends EventEmitter {
             window.Store.AppState.on('change:state', (_AppState, state) => { window.onAppStateChangedEvent(state); });
             window.Store.Conn.on('change:battery', (state) => { window.onBatteryStateChangedEvent(state); });
             window.Store.Call.on('add', (call) => { window.onIncomingCall(call); });
-            window.Store.Msg.on('add', (msg) => {
+            window.Store.Msg.on('add', (msg) => { 
                 if (msg.isNewMsg) {
-                    if (msg.type === 'ciphertext') {
+                    if(msg.type === 'ciphertext') {
                         // defer message event until ciphertext is resolved (type changed)
                         msg.once('change:type', (_msg) => window.onAddMessageEvent(window.WWebJS.getMessageModel(_msg)));
                     } else {
-                        window.onAddMessageEvent(window.WWebJS.getMessageModel(msg));
+                        window.onAddMessageEvent(window.WWebJS.getMessageModel(msg)); 
                     }
                 }
             });
-
+            
             {
                 const module = window.Store.createOrUpdateReactionsModule;
                 const ogMethod = module.createOrUpdateReactions;
@@ -543,7 +536,7 @@ class Client extends EventEmitter {
                         const parentMsgKey = window.Store.MsgKey.fromString(reaction.parentMsgKey);
                         const timestamp = reaction.timestamp / 1000;
 
-                        return { ...reaction, msgKey, parentMsgKey, timestamp };
+                        return {...reaction, msgKey, parentMsgKey, timestamp };
                     }));
 
                     return ogMethod(...args);
@@ -561,7 +554,7 @@ class Client extends EventEmitter {
         // Disconnect when navigating away when in PAIRING state (detect logout)
         this.pupPage.on('framenavigated', async () => {
             const appState = await this.getState();
-            if (!appState || appState === WAState.PAIRING) {
+            if(!appState || appState === WAState.PAIRING) {
                 await this.authStrategy.disconnect();
                 this.emit(Events.DISCONNECTED, 'NAVIGATION');
                 await this.destroy();
@@ -679,14 +672,14 @@ class Client extends EventEmitter {
             internalOptions.list = content;
             content = '';
         }
-
+        
         if (internalOptions.sendMediaAsSticker && internalOptions.attachment) {
             internalOptions.attachment = await Util.formatToWebpSticker(
                 internalOptions.attachment, {
-                name: options.stickerName,
-                author: options.stickerAuthor,
-                categories: options.stickerCategories
-            }, this.pupPage
+                    name: options.stickerName,
+                    author: options.stickerAuthor,
+                    categories: options.stickerCategories
+                }, this.pupPage
             );
         }
 
@@ -700,7 +693,7 @@ class Client extends EventEmitter {
             }
 
             const msg = await window.WWebJS.sendMessage(chat, message, options, sendSeen);
-            return JSON.parse(JSON.stringify(msg));
+            return msg.serialize();
         }, chatId, content, internalOptions, sendSeen);
 
         return new Message(this, newMessage);
@@ -830,9 +823,9 @@ class Client extends EventEmitter {
      */
     async setDisplayName(displayName) {
         const couldSet = await this.pupPage.evaluate(async displayName => {
-            if (!window.Store.Conn.canSetMyPushname()) return false;
+            if(!window.Store.Conn.canSetMyPushname()) return false;
 
-            if (window.Store.MDBackend) {
+            if(window.Store.MDBackend) {
                 // TODO
                 return false;
             } else {
@@ -843,14 +836,14 @@ class Client extends EventEmitter {
 
         return couldSet;
     }
-
+    
     /**
      * Gets the current connection state for the client
      * @returns {WAState} 
      */
     async getState() {
         return await this.pupPage.evaluate(() => {
-            if (!window.Store) return null;
+            if(!window.Store) return null;
             return window.Store.AppState.state;
         });
     }
@@ -981,11 +974,11 @@ class Client extends EventEmitter {
                 const chatWid = window.Store.WidFactory.createWid(contactId);
                 return await window.Store.ProfilePic.profilePicFind(chatWid);
             } catch (err) {
-                if (err.name === 'ServerStatusCodeError') return undefined;
+                if(err.name === 'ServerStatusCodeError') return undefined;
                 throw err;
             }
         }, contactId);
-
+        
         return profilePic ? profilePic.eurl : undefined;
     }
 
@@ -999,8 +992,8 @@ class Client extends EventEmitter {
             let contact = window.Store.Contact.get(contactId);
             if (!contact) {
                 const wid = window.Store.WidFactory.createUserWid(contactId);
-                const chatConstructor = window.Store.Contact.getModelsArray().find(c => !c.isGroup).constructor;
-                contact = new chatConstructor({ id: wid });
+                const chatConstructor = window.Store.Contact.getModelsArray().find(c=>!c.isGroup).constructor;
+                contact = new chatConstructor({id: wid});
             }
 
             if (contact.commonGroups) {

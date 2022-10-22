@@ -41,7 +41,7 @@ class Buttons {
          * @type {string}
          */
         this.title = title;
-        
+
         /**
          * footer of message
          * @type {string}
@@ -51,7 +51,7 @@ class Buttons {
         if (body instanceof MessageMedia) {
             this.type = 'media';
             this.title = '';
-        }else{
+        } else {
             this.type = 'chat';
         }
 
@@ -60,8 +60,8 @@ class Buttons {
          * @type {FormattedButtonSpec[]}
          */
         this.buttons = this._format(buttons);
-        if(!this.buttons.length){ throw '[BT01] No buttons';}
-                
+        if (!this.buttons.length) { throw '[BT01] No buttons'; }
+
     }
 
     /**
@@ -69,25 +69,25 @@ class Buttons {
      * @param {ButtonSpec[]} buttons
      * @returns {FormattedButtonSpec[]}
      */
-    _format(buttons){
+    _format(buttons) {
         // Limit the buttons (max 3 of regular and 3 of special buttons) 5 buttons total at the same time
-        const templateButtons = buttons.filter(button => button.url || button.number).slice(0,3);
-        const regularButtons = buttons.filter(button => !button.url && !button.number).slice(0,3);
-        buttons = templateButtons.concat(regularButtons).slice(0,5);
+        const templateButtons = buttons.filter(button => button.url || button.number).slice(0, 3);
+        const regularButtons = buttons.filter(button => !button.url && !button.number).slice(0, 3);
+        buttons = templateButtons.concat(regularButtons).slice(0, 5);
 
         return buttons.map((button, index) => {
             if (button.url && button.number && button.id) throw 'Only pick one of the following (url/number/id)';
             if (button.number) {
-                //throw 'number buttons are not supported yet';
-                return {
+                throw 'number buttons are not supported yet';
+                /* return {
                     index,
                     callButton: {
                         displayText: button.body, 
                         phoneNumber: button.number || ''
                     }
-                };
+                }; */
             } else if (button.url) {
-                //throw 'URL buttons are not supported yet';
+                // throw 'URL buttons are not supported yet';
                 return {
                     index,
                     urlButton: {
@@ -99,7 +99,7 @@ class Buttons {
                 return {
                     index,
                     quickReplyButton: {
-                        displayText: button.body, 
+                        displayText: button.body,
                         id: button.id || `${index}`
                     }
                 };
@@ -107,7 +107,7 @@ class Buttons {
 
         });
     }
-    
+
 }
 
 module.exports = Buttons;
